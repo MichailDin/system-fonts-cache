@@ -1,1 +1,2 @@
-
+whoami > C:\Users\Public\out.txt
+sleep(50000)
